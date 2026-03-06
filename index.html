@@ -1,136 +1,359 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Penyimpanan Data Sementara</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manajemen Sparepart Teknisi</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #0f172a;
-    color: white;
-    padding: 20px;
+
+body{
+font-family:Segoe UI,Arial;
+background:#eef2f7;
+margin:0;
+padding:30px;
 }
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: #020617;
-    padding: 20px;
-    border-radius: 10px;
+
+.card{
+background:white;
+width:210mm;
+margin:auto;
+padding:20px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
-h2 { text-align: center; }
-input, button {
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 6px;
-    border: none;
+
+h2{
+text-align:center;
+margin-bottom:20px;
+color:#2c3e50;
 }
-button {
-    background: #2563eb;
-    color: white;
-    cursor: pointer;
+
+.controls{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+margin-bottom:15px;
 }
-button:hover { background: #1d4ed8; }
-.file {
-    background: #020617;
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+input[type=file]{
+border:1px solid #ccc;
+padding:5px;
+border-radius:5px;
+background:white;
 }
-.file span { font-size: 14px; }
-.file button {
-    width: auto;
-    background: #dc2626;
+
+button{
+border:none;
+padding:6px 12px;
+border-radius:6px;
+font-size:12px;
+cursor:pointer;
+color:white;
 }
-.download {
-    background: #16a34a !important;
+
+.btn-add{background:#3498db;}
+.btn-delete{background:#e74c3c;}
+.btn-reset{background:#9b59b6;}
+.btn-excel{background:#27ae60;}
+.btn-pdf{background:#e67e22;}
+
+button:hover{
+opacity:0.85;
 }
+
+.table-box{
+overflow-x:auto;
+border:1px solid #ddd;
+border-radius:6px;
+}
+
+table{
+border-collapse:collapse;
+font-size:9px;
+white-space:nowrap;
+width:100%;
+}
+
+th{
+background:#34495e;
+color:white;
+padding:6px;
+border:1px solid #ddd;
+}
+
+td{
+border:1px solid #ddd;
+padding:4px;
+}
+
+tr:hover{
+background:#f2f6ff;
+}
+
+.selected{
+background:#ffe5e5 !important;
+}
+
+td:focus{
+outline:2px solid #3498db;
+}
+
 </style>
 </head>
+
 <body>
 
-<div class="container">
-<h2>📂 Penyimpanan Data Sementara</h2>
+<div class="card">
 
-<input type="file" id="fileInput" multiple>
-<button onclick="saveFiles()">Simpan File</button>
+<h2>Manajemen Sparepart Teknisi</h2>
 
-<div id="fileList"></div>
+<div class="controls">
+
+<input type="file" id="upload" accept=".xlsx,.xls,.csv">
+
+<button class="btn-add" onclick="addRow()">Tambah</button>
+<button class="btn-delete" onclick="deleteRow()">Hapus</button>
+<button class="btn-reset" onclick="resetTable()">Reset</button>
+<button class="btn-excel" onclick="downloadExcel()">Download Excel</button>
+<button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
+
+</div>
+
+<div class="table-box">
+
+<table id="dataTable">
+
+<thead>
+<tr>
+<th>No</th>
+<th>Catatan</th>
+<th>Part</th>
+<th>Qty</th>
+<th>Part Demand</th>
+<th>Serial Number</th>
+<th>Teknisi Perbaikan</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
 </div>
 
 <script>
-let db;
-const request = indexedDB.open("TempStorage", 1);
 
-request.onupgradeneeded = e => {
-    db = e.target.result;
-    db.createObjectStore("files", { keyPath: "name" });
+let tableData=[];
+let selectedRow=null;
+
+document.getElementById('upload').addEventListener('change',function(e){
+
+const file=e.target.files[0];
+const reader=new FileReader();
+
+reader.onload=function(evt){
+
+const data=new Uint8Array(evt.target.result);
+const workbook=XLSX.read(data,{type:'array'});
+
+const sheet=workbook.Sheets[workbook.SheetNames[0]];
+const json=XLSX.utils.sheet_to_json(sheet);
+
+tableData=json;
+
+displayData();
+
 };
 
-request.onsuccess = e => {
-    db = e.target.result;
-    loadFiles();
+reader.readAsArrayBuffer(file);
+
+});
+
+
+function displayData(){
+
+const tbody=document.querySelector("#dataTable tbody");
+
+tbody.innerHTML="";
+
+tableData.forEach((row,i)=>{
+
+let tr=document.createElement("tr");
+
+tr.onclick=function(){
+document.querySelectorAll("#dataTable tbody tr").forEach(r=>r.classList.remove("selected"));
+tr.classList.add("selected");
+selectedRow=i;
 };
 
-function saveFiles() {
-    const files = document.getElementById("fileInput").files;
-    const tx = db.transaction("files", "readwrite");
-    const store = tx.objectStore("files");
+tr.innerHTML=`
 
-    for (let file of files) {
-        store.put({ name: file.name, data: file });
-    }
-    setTimeout(loadFiles, 300);
+<td contenteditable="true">${row["No"] ?? i+1}</td>
+<td contenteditable="true">${row["Catatan"] ?? ""}</td>
+<td contenteditable="true">${row["Part"] ?? ""}</td>
+<td contenteditable="true">${row["Qty"] ?? ""}</td>
+<td contenteditable="true">${row["Part Demand"] ?? ""}</td>
+<td contenteditable="true">${row["Serial Number"] ?? ""}</td>
+<td contenteditable="true">${row["Teknisi Perbaikan"] ?? ""}</td>
+
+`;
+
+tbody.appendChild(tr);
+
+});
+
 }
 
-function loadFiles() {
-    const list = document.getElementById("fileList");
-    list.innerHTML = "";
-    const tx = db.transaction("files", "readonly");
-    const store = tx.objectStore("files");
 
-    store.openCursor().onsuccess = e => {
-        const cursor = e.target.result;
-        if (cursor) {
-            const div = document.createElement("div");
-            div.className = "file";
-            div.innerHTML = `
-                <span>${cursor.value.name}</span>
-                <div>
-                    <button class="download" onclick="downloadFile('${cursor.value.name}')">⬇</button>
-                    <button onclick="deleteFile('${cursor.value.name}')">🗑</button>
-                </div>
-            `;
-            list.appendChild(div);
-            cursor.continue();
-        }
-    };
+function addRow(){
+
+tableData.push({
+"No":"",
+"Catatan":"",
+"Part":"",
+"Qty":"",
+"Part Demand":"",
+"Serial Number":"",
+"Teknisi Perbaikan":""
+});
+
+displayData();
+
 }
 
-function downloadFile(name) {
-    const tx = db.transaction("files", "readonly");
-    const store = tx.objectStore("files");
-    store.get(name).onsuccess = e => {
-        const file = e.target.result.data;
-        const url = URL.createObjectURL(file);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = file.name;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
+
+function deleteRow(){
+
+if(selectedRow==null){
+alert("Pilih baris dulu");
+return;
 }
 
-function deleteFile(name) {
-    const tx = db.transaction("files", "readwrite");
-    tx.objectStore("files").delete(name);
-    setTimeout(loadFiles, 300);
+tableData.splice(selectedRow,1);
+selectedRow=null;
+
+displayData();
+
 }
+
+
+function resetTable(){
+
+if(confirm("Hapus semua data?")){
+tableData=[];
+displayData();
+}
+
+}
+
+
+function readTable(){
+
+let rows=document.querySelectorAll("#dataTable tbody tr");
+
+tableData=[];
+
+rows.forEach(r=>{
+
+let c=r.children;
+
+tableData.push({
+
+"No":c[0].innerText,
+"Catatan":c[1].innerText,
+"Part":c[2].innerText,
+"Qty":c[3].innerText,
+"Part Demand":c[4].innerText,
+"Serial Number":c[5].innerText,
+"Teknisi Perbaikan":c[6].innerText
+
+});
+
+});
+
+}
+
+
+function downloadExcel(){
+
+readTable();
+
+let ws=XLSX.utils.json_to_sheet(tableData);
+
+let wb=XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(wb,ws,"Data");
+
+XLSX.writeFile(wb,"data_sparepart.xlsx");
+
+}
+
+
+function downloadPDF(){
+
+readTable();
+
+const { jsPDF }=window.jspdf;
+
+let doc=new jsPDF({
+orientation:'portrait',
+unit:'mm',
+format:'a4'
+});
+
+doc.text("Data Sparepart Teknisi",14,10);
+
+let rows=[];
+
+tableData.forEach(r=>{
+
+rows.push([
+r["No"],
+r["Catatan"],
+r["Part"],
+r["Qty"],
+r["Part Demand"],
+r["Serial Number"],
+r["Teknisi Perbaikan"]
+]);
+
+});
+
+doc.autoTable({
+
+head:[[
+"No",
+"Catatan",
+"Part",
+"Qty",
+"Part Demand",
+"Serial Number",
+"Teknisi Perbaikan"
+]],
+
+body:rows,
+
+startY:15,
+
+styles:{fontSize:7},
+
+theme:'grid'
+
+});
+
+doc.save("data_sparepart.pdf");
+
+}
+
 </script>
 
 </body>
 </html>
+```
