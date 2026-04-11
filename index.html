@@ -203,19 +203,16 @@
             vertical-align: middle;
         }
 
-        /* SEMUA kolom selain kolom Part Demand tetap rata tengah */
         .data-table td:not(:first-child) {
             text-align: center;
         }
         
-        /* KHUSUS kolom pertama (Part Demand) rata kiri */
         .data-table td:first-child {
             text-align: left;
             font-weight: 500;
             padding-left: 12px;
         }
         
-        /* Header kolom pertama juga rata kiri agar konsisten */
         .data-table th:first-child {
             text-align: left;
             padding-left: 12px;
@@ -287,6 +284,12 @@
             background: #fff3e0;
             border-left: 3px solid #f5b042;
         }
+
+        .danger-note {
+            background: #fee2e2;
+            border-left: 3px solid #dc2626;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body>
@@ -296,11 +299,10 @@
             <i class="fas fa-cut"></i> 
             Part Demand & Service Job
         </h1>
-        <p><i class="fas fa-filter"></i> <strong>Auto-Extract SJOB:</strong> Kolom "Nomor Service Job / Catatan" — secara otomatis <strong>hanya mengambil teks dari "SJOB" hingga akhir</strong>, sisanya dihapus. <i class="fas fa-align-left"></i> Kolom Part Demand rata kiri.</p>
+        <p><i class="fas fa-filter"></i> <strong>Auto-Extract SJOB:</strong> Kolom "Nomor Service Job / Catatan" — hanya teks dari "SJOB" hingga akhir. <i class="fas fa-check-circle"></i> <strong>Kolom "Part Demand / Part": HANYA mendeteksi dan mengizinkan data PART murni. Data yang mengandung "Part Demand" akan DITOLAK.</strong></p>
     </div>
 
     <div class="content">
-        <!-- Panel Upload -->
         <div class="card-panel">
             <div style="font-weight: 600; margin-bottom: 8px;"><i class="fas fa-upload"></i> Unggah Data (Excel / CSV / JSON)</div>
             <div class="flex-row">
@@ -312,34 +314,35 @@
                     <span id="fileNameDisplay" class="file-name">Belum ada file</span>
                 </div>
                 <button id="uploadBtn" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> Muat & Ekstrak SJOB</button>
-                <button id="sampleBtn" class="btn btn-outline"><i class="fas fa-chart-simple"></i> Contoh Data</button>
                 <button id="clearAllBtn" class="btn btn-warning"><i class="fas fa-trash-can"></i> Hapus Semua</button>
             </div>
             <div class="info-banner warning-note">
                 <i class="fas fa-scissors"></i> 
-                <span><strong>Aturan Ekstraksi:</strong> Setiap nilai di kolom <strong>"Nomor Service Job / Catatan"</strong> akan diproses: <strong>hanya teks mulai dari "SJOB" (case-sensitive) sampai akhir yang disimpan</strong>. Teks sebelum "SJOB" akan dihapus. Jika tidak mengandung "SJOB", kolom akan dikosongkan.</span>
+                <span><strong>Aturan Ekstraksi SJOB:</strong> Kolom "Nomor Service Job / Catatan" hanya mengambil teks mulai dari "SJOB" (case-sensitive) sampai akhir.</span>
+            </div>
+            <div class="info-banner danger-note" style="margin-top: 8px;">
+                <i class="fas fa-shield-alt"></i> 
+                <span><strong>Aturan VALIDASI Part Demand / Part:</strong> Sistem akan MEMBLOKIR / MENOLAK baris yang nilai pada kolom ini mengandung kata <strong>"Part Demand"</strong> (case-insensitive). Hanya data Part murni yang diperbolehkan masuk. Kolom ini hanya mendeteksi teks PART.</span>
             </div>
         </div>
 
-        <!-- Panel Download Excel (hanya Excel, tanpa CSV) -->
         <div class="card-panel" style="background:#fefaf5;">
             <div style="font-weight: 600; margin-bottom: 8px;"><i class="fas fa-download"></i> Ekspor Data ke Excel</div>
             <div class="flex-row">
                 <button id="downloadExcelBtn" class="btn btn-success"><i class="fas fa-file-excel"></i> Download Excel (.xlsx)</button>
-                <span style="font-size:0.75rem; color:#5a6e7c; margin-left: 8px;"><i class="fas fa-info-circle"></i> Data yang diekspor adalah hasil ekstraksi (hanya SJOB ke kanan)</span>
+                <span style="font-size:0.75rem; color:#5a6e7c; margin-left: 8px;"><i class="fas fa-info-circle"></i> Header: Part Demand, Lot, Attribute, QTY, QTY Konversi, UM Konversi, Remarks 1, Remarks 2, Nomor Service Job</span>
             </div>
         </div>
 
-        <!-- Tabel Data -->
         <div class="summary-bar">
-            <h3><i class="fas fa-table-list"></i> Data Part & Service Job (Hasil Ekstraksi SJOB)</h3>
+            <h3><i class="fas fa-table-list"></i> Data Part & Service Job (Hanya Data PART)</h3>
             <span class="badge-count" id="rowCounter">Total: 0 baris</span>
         </div>
         <div class="table-wrapper">
             <table class="data-table" id="dataTable">
                 <thead>
                     <tr>
-                        <th>Part Demand</th>
+                        <th>Part Demand / Part</th>
                         <th>Lot</th>
                         <th>Attribute</th>
                         <th>QTY / Qty Transaksi</th>
@@ -352,50 +355,72 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr class="empty-row"><td colspan="10">Belum ada data. Upload file atau klik 'Contoh Data'.</td></tr>
+                    <tr class="empty-row"><td colspan="10">Belum ada data. Upload file Excel/CSV/JSON untuk memulai.佛罗
                 </tbody>
             </table>
         </div>
         <div style="margin-top: 12px; font-size:0.7rem; text-align:right; color:#6c8fae;">
-            <i class="fas fa-arrow-right"></i> Nilai asli sebelum ekstraksi TIDAK disimpan. Hanya teks "SJOB..." yang dipertahankan. Kolom Part Demand rata kiri.
+            <i class="fas fa-ban" style="color:#dc2626;"></i> Data Part Demand otomatis ditolak. Hanya data PART murni yang bisa masuk ke kolom ini.
         </div>
     </div>
     <footer>
-        <i class="fas fa-robot"></i> Auto-extract: Mencari kata "SJOB" (case-sensitive) → mengambil dari posisi tersebut hingga akhir string.
+        <i class="fas fa-robot"></i> Validasi: Kolom "Part Demand / Part" hanya mendeteksi & menerima data PART (tidak mengandung kata "Part Demand").
     </footer>
 </div>
 
 <script>
     // ------------- DATA STORAGE -------------
-    // Nama kolom target: "Nomor Service Job / Catatan"
-    const TARGET_COLUMN = "Nomor Service Job / Catatan";
+    const INTERNAL_PART_COLUMN = "Part";
+    const INTERNAL_SERVICE_COLUMN = "Nomor Service Job / Catatan";
     
-    // Kolom yang diperlukan - perhatikan bahwa "QTY" tetap sebagai key internal, namun tampilan header diubah menjadi "QTY / Qty Transaksi"
     const requiredColumns = [
-        "Part Demand", "Lot", "Attribute", "QTY", 
+        INTERNAL_PART_COLUMN, "Lot", "Attribute", "QTY", 
         "QTY Konversi", "UM Konversi", "Remarks 1", "Remarks 2", 
-        TARGET_COLUMN
+        INTERNAL_SERVICE_COLUMN
     ];
     
-    // Alternative mapping saat upload (untuk kompatibilitas dengan file lama)
+    const exportHeaders = [
+        "Part Demand", "Lot", "Attribute", "QTY", 
+        "QTY Konversi", "UM Konversi", "Remarks 1", "Remarks 2", 
+        "Nomor Service Job"
+    ];
+    
+    const exportDataMapping = {
+        "Part Demand": INTERNAL_PART_COLUMN,
+        "Lot": "Lot",
+        "Attribute": "Attribute",
+        "QTY": "QTY",
+        "QTY Konversi": "QTY Konversi",
+        "UM Konversi": "UM Konversi",
+        "Remarks 1": "Remarks 1",
+        "Remarks 2": "Remarks 2",
+        "Nomor Service Job": INTERNAL_SERVICE_COLUMN
+    };
+    
+    // Mapping header dari file upload ke internal column
     const alternativeColumnNames = {
-        "Nomor Service Job": TARGET_COLUMN,
-        "Nomor Service Job / Catatan": TARGET_COLUMN,
-        "Service Job": TARGET_COLUMN,
-        "Catatan": TARGET_COLUMN,
-        "SJOB": TARGET_COLUMN,
+        // Part column: mendeteksi berbagai kemungkinan header
+        "Part": INTERNAL_PART_COLUMN,
+        "Part Demand": INTERNAL_PART_COLUMN,
+        "Part Demand / Part": INTERNAL_PART_COLUMN,
+        "Part / Part Demand": INTERNAL_PART_COLUMN,
+        // Service Job column
+        "Nomor Service Job": INTERNAL_SERVICE_COLUMN,
+        "Nomor Service Job / Catatan": INTERNAL_SERVICE_COLUMN,
+        "Service Job": INTERNAL_SERVICE_COLUMN,
+        "Catatan": INTERNAL_SERVICE_COLUMN,
+        "SJOB": INTERNAL_SERVICE_COLUMN,
+        // QTY column
         "QTY / Qty Transaksi": "QTY",
         "Qty Transaksi": "QTY"
     };
     
-    let dataset = [];    // menyimpan object dengan keys requiredColumns (nilai sudah terekstrak hanya SJOB...)
+    let dataset = [];
 
-    // Helper: normalize header
     function normalizeHeader(str) {
         return str.trim();
     }
     
-    // Fungsi mapping header alternatif ke kolom standar
     function mapColumnName(originalHeader) {
         const normalized = normalizeHeader(originalHeader);
         for (let [alt, target] of Object.entries(alternativeColumnNames)) {
@@ -411,71 +436,80 @@
         return null;
     }
 
-    /**
-     * FUNGSI EKSTRAKSI UTAMA: hanya mengambil teks dari "SJOB" hingga akhir
-     * Aturan: cari substring "SJOB" (case-sensitive). Jika ditemukan, ambil dari index "SJOB" sampai akhir.
-     * Jika tidak ditemukan, kembalikan string kosong.
-     */
     function extractSjobToEnd(rawValue) {
         if (!rawValue || typeof rawValue !== 'string') return "";
         const trimmed = rawValue.trim();
         const sjobIndex = trimmed.indexOf("SJOB");
-        if (sjobIndex === -1) {
-            return "";   // tidak mengandung SJOB, hapus semua (kosong)
-        }
-        // ambil dari posisi SJOB sampai akhir string
-        const extracted = trimmed.substring(sjobIndex);
-        return extracted;
+        if (sjobIndex === -1) return "";
+        return trimmed.substring(sjobIndex);
     }
     
-    // Mapping dari raw object ke internal object, dengan EKSTRAKSI pada kolom target
-    function mapToInternal(row) {
+    /**
+     * VALIDASI UTAMA: Cek apakah nilai pada kolom Part mengandung kata "Part Demand"
+     * Jika mengandung kata "Part Demand" (case-insensitive), maka data DITOLAK
+     * Hanya data PART murni yang diperbolehkan
+     */
+    function isValidPartValue(value) {
+        if (!value || typeof value !== 'string') return true;
+        const lowerValue = value.toLowerCase();
+        if (lowerValue.includes("part demand")) {
+            return false;
+        }
+        return true;
+    }
+    
+    function mapToInternal(row, rowIndex) {
         let mapped = {};
         requiredColumns.forEach(col => { mapped[col] = ""; });
+        let partValue = "";
         
         for (let [key, value] of Object.entries(row)) {
             if (value === undefined || value === null) continue;
             const targetCol = mapColumnName(key);
             if (targetCol && requiredColumns.includes(targetCol)) {
                 let rawVal = (value !== undefined && value !== null) ? String(value).trim() : "";
-                // JIKA kolom ini adalah TARGET_COLUMN, lakukan ekstraksi SJOB
-                if (targetCol === TARGET_COLUMN) {
+                if (targetCol === INTERNAL_SERVICE_COLUMN) {
                     rawVal = extractSjobToEnd(rawVal);
+                }
+                if (targetCol === INTERNAL_PART_COLUMN) {
+                    partValue = rawVal;
                 }
                 mapped[targetCol] = rawVal;
             }
         }
         
+        // VALIDASI: jika partValue mengandung "Part Demand", return null (baris ditolak)
+        if (!isValidPartValue(partValue)) {
+            return null;
+        }
+        
         return mapped;
     }
     
-    // Cek apakah suatu nilai mengandung SJOB (untuk keperluan highlight)
     function hasSjobPrefix(value) {
         if (!value || typeof value !== 'string') return false;
         return value.trim().startsWith("SJOB");
     }
 
-    // Render tabel - Part Demand otomatis rata kiri berkat CSS (td:first-child)
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         if (!dataset.length) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Tidak ada data. Upload file atau klik \'Contoh Data\'.</td></tr>';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Belum ada data. Upload file Excel/CSV/JSON untuk memulai.佛罗';
             document.getElementById('rowCounter').innerText = `Total: 0 baris`;
             return;
         }
 
         let html = '';
         dataset.forEach((item, idx) => {
-            const serviceJobRaw = item[TARGET_COLUMN] || "";
+            const serviceJobRaw = item[INTERNAL_SERVICE_COLUMN] || "";
             const hasSjob = hasSjobPrefix(serviceJobRaw);
             const displayServiceJob = escapeHtml(serviceJobRaw);
             const sjobCellContent = hasSjob 
                 ? `<span class="sjob-highlight"><i class="fas fa-bolt" style="font-size:9px; margin-right:4px;"></i> ${displayServiceJob}</span>`
                 : (displayServiceJob === "" ? "<span style='color:#aaa; font-style:italic;'>(kosong)</span>" : displayServiceJob);
             
-            // Part Demand (kolom pertama) akan otomatis rata kiri oleh CSS
             html += `<tr>
-                        <td>${escapeHtml(item["Part Demand"] || '')}</td>
+                        <td>${escapeHtml(item[INTERNAL_PART_COLUMN] || '')}</td>
                         <td>${escapeHtml(item["Lot"] || '')}</td>
                         <td>${escapeHtml(item["Attribute"] || '')}</td>
                         <td>${escapeHtml(item["QTY"] || '')}</td>
@@ -490,7 +524,6 @@
         tbody.innerHTML = html;
         document.getElementById('rowCounter').innerText = `Total: ${dataset.length} baris`;
 
-        // Event hapus per baris
         document.querySelectorAll('.fa-trash-alt').forEach(icon => {
             icon.addEventListener('click', (e) => {
                 const index = parseInt(icon.getAttribute('data-index'));
@@ -512,78 +545,50 @@
         });
     }
 
-    // Menambahkan data ke dataset (dengan asumsi sudah terekstrak oleh mapToInternal)
     function addDataRows(rowsArray) {
         let added = 0;
-        for (let row of rowsArray) {
-            let internal = mapToInternal(row);
-            // Cek apakah setidaknya ada satu kolom yang tidak kosong? Untuk menghindari baris kosong total.
+        let rejected = 0;
+        let rejectedSample = [];
+        
+        for (let i = 0; i < rowsArray.length; i++) {
+            let internal = mapToInternal(rowsArray[i], i);
+            if (internal === null) {
+                rejected++;
+                let partVal = "";
+                for (let [key, value] of Object.entries(rowsArray[i])) {
+                    const mappedCol = mapColumnName(key);
+                    if (mappedCol === INTERNAL_PART_COLUMN) {
+                        partVal = value;
+                        break;
+                    }
+                }
+                if (rejectedSample.length < 5) {
+                    rejectedSample.push(partVal || "(unknown)");
+                }
+                continue;
+            }
             const allEmpty = requiredColumns.every(col => internal[col] === "");
             if (!allEmpty) {
                 dataset.push(internal);
                 added++;
             }
         }
+        
+        if (rejected > 0) {
+            let sampleMsg = rejectedSample.join(", ");
+            alert(`⚠️ PERINGATAN: ${rejected} baris DITOLAK karena kolom "Part Demand / Part" mengandung kata "Part Demand".\nContoh nilai yang ditolak: ${sampleMsg}${rejectedSample.length < rejected ? ` (+${rejected - rejectedSample.length} lainnya)` : ""}\n\nHanya ${added} baris valid (data PART murni) yang berhasil dimuat.`);
+        } else if (added > 0) {
+            alert(`✅ Berhasil memuat ${added} baris data PART murni.`);
+        } else if (added === 0 && rejected === 0) {
+            alert("Tidak ada data yang valid untuk dimuat.");
+        }
+        
         renderTable();
         return added;
     }
-    
-    // Contoh data yang beragam (sebelum ekstraksi)
-    function loadSampleData() {
-        const rawSamples = [
-            { 
-                "Part Demand": "PD-101 - Assy Pump", "Lot": "LOT-A1", "Attribute": "OEM", "QTY": "10", 
-                "QTY Konversi": "10", "UM Konversi": "PCS", "Remarks 1": "Rush", "Remarks 2": "Gudang 1", 
-                "Nomor Service Job / Catatan": "Catatan penting: SJOB/00123 - Perbaikan mesin unit A"
-            },
-            { 
-                "Part Demand": "PD-202 - Motor Drive", "Lot": "LOT-B2", "Attribute": "Aftermarket", "QTY": "5", 
-                "QTY Konversi": "5", "UM Konversi": "BOX", "Remarks 1": "Regular", "Remarks 2": "Konsinyasi", 
-                "Nomor Service Job / Catatan": "Service Job: SJOB-AB-987-XYZ / urgent spare part"
-            },
-            { 
-                "Part Demand": "PD-303 - Control Board", "Lot": "LOT-C9", "Attribute": "Refurb", "QTY": "8", 
-                "QTY Konversi": "8", "UM Konversi": "PCS", "Remarks 1": "Garansi", "Remarks 2": "Service", 
-                "Nomor Service Job / Catatan": "JOB/12345"   // Tidak ada SJOB => akan menjadi kosong
-            },
-            { 
-                "Part Demand": "PD-404 - Fan Assembly", "Lot": "LOT-D7", "Attribute": "Original", "QTY": "20", 
-                "QTY Konversi": "2", "UM Konversi": "DUS", "Remarks 1": "Import", "Remarks 2": "Job #221", 
-                "Nomor Service Job / Catatan": "SJOB/MAINTENANCE/221 - Overhaul total"
-            },
-            { 
-                "Part Demand": "PD-505 - Sensor Kit", "Lot": "LOT-E3", "Attribute": "Premium", "QTY": "3", 
-                "QTY Konversi": "3", "UM Konversi": "PCS", "Remarks 1": "High priority", "Remarks 2": "Spare part", 
-                "Nomor Service Job / Catatan": "Laporan: SJOB-FULL-TEXT-KEKANAN-SAMPAI-SELESAI || catatan tambahan"
-            },
-            { 
-                "Part Demand": "PD-606 - Housing Cover", "Lot": "LOT-F4", "Attribute": "Service", "QTY": "12", 
-                "QTY Konversi": "12", "UM Konversi": "PCS", "Remarks 1": "Express", "Remarks 2": "Workshop", 
-                "Nomor Service Job / Catatan": "Sebelum SJOB/REPAIR/UNIT-007 (Unit rusak ringan)"
-            },
-            { 
-                "Part Demand": "PD-707 - Connector Cable", "Lot": "LOT-G5", "Attribute": "Testing", "QTY": "2", 
-                "QTY Konversi": "2", "UM Konversi": "PCS", "Remarks 1": "Sample", "Remarks 2": "R&D", 
-                "Nomor Service Job / Catatan": "sjob/12345 lowercase"  // tidak dikenali karena case-sensitive SJOB -> kosong
-            },
-            { 
-                "Part Demand": "PD-808 - Transformer XFMR", "Lot": "LOT-H6", "Attribute": "Industrial", "QTY": "7", 
-                "QTY Konversi": "7", "UM Konversi": "PCS", "Remarks 1": "Long lead", "Remarks 2": "PO-123", 
-                "Nomor Service Job / Catatan": "SJOB/TRANSFORMER-2024/MAINT"
-            }
-        ];
-        
-        // Proses setiap sample melalui mapToInternal agar ter-ekstrak
-        for (let raw of rawSamples) {
-            let processed = mapToInternal(raw);
-            dataset.push(processed);
-        }
-        renderTable();
-    }
 
-    // Hapus semua data
     function clearAllData() {
-        if (dataset.length && confirm("Hapus SEMUA data yang tersimpan? (Data hasil ekstraksi akan hilang)")) {
+        if (dataset.length && confirm("Hapus SEMUA data yang tersimpan?")) {
             dataset = [];
             renderTable();
         } else if (dataset.length === 0) {
@@ -591,39 +596,32 @@
         }
     }
 
-    // ------------------- FUNGSI DOWNLOAD EXCEL (XLSX) -------------------
     function downloadAsExcel() {
         if (dataset.length === 0) {
             alert("Tidak ada data untuk diekspor ke Excel.");
             return;
         }
-        // export data yang sudah terekstrak (hanya SJOB ke kanan)
+        
         const exportData = dataset.map(row => {
             let newRow = {};
-            requiredColumns.forEach(col => {
-                newRow[col] = row[col] || "";
-            });
+            for (let exportHeader of exportHeaders) {
+                const internalKey = exportDataMapping[exportHeader];
+                newRow[exportHeader] = row[internalKey] || "";
+            }
             return newRow;
         });
-        const worksheet = XLSX.utils.json_to_sheet(exportData, { header: requiredColumns });
         
-        // Mengganti header di sheet untuk kolom QTY menjadi "QTY / Qty Transaksi"
-        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:J1');
-        const headerRow = range.s.r;
-        for (let C = range.s.c; C <= range.e.c; C++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: C });
-            const cell = worksheet[cellAddress];
-            if (cell && cell.v === "QTY") {
-                cell.v = "QTY / Qty Transaksi";
-            }
-        }
+        const worksheet = XLSX.utils.json_to_sheet(exportData, { header: exportHeaders });
+        worksheet['!cols'] = [
+            { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
+            { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 35 }
+        ];
         
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "PartDemand_ExtractedSJOB");
-        XLSX.writeFile(workbook, `AfterSales_GoodsTransaction_TEMPLATE{new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+        XLSX.writeFile(workbook, `Part_Data_SJOB_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
     }
 
-    // ------------------- UPLOAD & PARSE FILE -------------------
     function handleFile(file) {
         return new Promise((resolve, reject) => {
             const ext = file.name.split('.').pop().toLowerCase();
@@ -679,7 +677,6 @@
         });
     }
 
-    // Event Upload dengan ekstraksi otomatis
     document.getElementById('uploadBtn').addEventListener('click', () => {
         const fileInput = document.getElementById('fileInput');
         const file = fileInput.files[0];
@@ -692,9 +689,7 @@
                 alert("File tidak mengandung data baris.");
                 return;
             }
-            const added = addDataRows(rows);
-            let extractedCount = dataset.filter(item => item[TARGET_COLUMN] !== "").length;
-            alert(`Berhasil memuat ${added} baris data.\nDari jumlah tersebut, ${extractedCount} baris memiliki hasil ekstraksi SJOB (kolom tidak kosong).\n\nAturan: hanya teks mulai dari "SJOB" yang disimpan.`);
+            addDataRows(rows);
             fileInput.value = '';
             document.getElementById('fileNameDisplay').innerText = 'Belum ada file';
         }).catch(err => {
@@ -702,22 +697,14 @@
         });
     });
 
-    // Contoh data
-    document.getElementById('sampleBtn').addEventListener('click', () => {
-        loadSampleData();
-    });
-
-    // Hapus semua
     document.getElementById('clearAllBtn').addEventListener('click', () => {
         clearAllData();
     });
 
-    // Download Excel (XLSX)
     document.getElementById('downloadExcelBtn').addEventListener('click', () => {
         downloadAsExcel();
     });
 
-    // Tampilkan nama file
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -727,7 +714,6 @@
         }
     });
 
-    // Inisialisasi render
     renderTable();
 </script>
 </body>
