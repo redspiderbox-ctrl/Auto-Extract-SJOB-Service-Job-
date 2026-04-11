@@ -1,681 +1,734 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistem Manajemen Sparepart</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Part Manager - Auto Extract SJOB | Upload & Download Excel</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- SheetJS untuk Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<!-- Link Font Awesome untuk Ikon -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        body {
+            background: linear-gradient(145deg, #eef2f7 0%, #dce5ef 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 1.8rem 1.2rem;
+            color: #1e2f3e;
+        }
 
-<style>
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.8rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
 
-:root {
-    --primary: #2563eb;
-    --primary-dark: #1e40af;
-    --secondary: #64748b;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --bg-color: #f1f5f9;
-    --card-bg: #ffffff;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --border-color: #e2e8f0;
-}
+        .page-header {
+            background: #0a2f44;
+            padding: 1.4rem 2rem;
+            color: white;
+            border-bottom: 4px solid #f5b042;
+        }
 
-body{
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin:0;
-    padding:20px;
-    background:var(--bg-color);
-    color: var(--text-main);
-}
+        .page-header h1 {
+            font-weight: 600;
+            font-size: 1.7rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-/* Container Utama */
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
+        .page-header h1 i {
+            color: #f5b042;
+        }
 
-/* Header Modern */
-.header-content {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-}
+        .page-header p {
+            margin-top: 6px;
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
 
-.header-content i {
-    font-size: 28px;
-    color: var(--primary);
-    background: #dbeafe;
-    padding: 15px;
-    border-radius: 12px;
-}
+        .content {
+            padding: 2rem;
+        }
 
-.header-content h3 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-main);
-}
+        .card-panel {
+            background: #f9fbfe;
+            border-radius: 1.2rem;
+            padding: 1.3rem 1.8rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2edf7;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
 
-.header-content p {
-    margin: 5px 0 0 0;
-    color: var(--text-muted);
-    font-size: 14px;
-}
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-top: 0.8rem;
+        }
 
-/* Card Style */
-.card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-    margin-bottom: 20px;
-}
+        .file-group {
+            flex: 2;
+            min-width: 240px;
+        }
 
-/* Tabs Modern */
-.tabs{
-    display:flex;
-    background: #f8fafc;
-    padding: 10px 15px 0 15px;
-    border-bottom: 1px solid var(--border-color);
-}
+        .file-label {
+            background: white;
+            border: 1px solid #cbdde9;
+            border-radius: 40px;
+            padding: 0.55rem 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-block;
+            transition: 0.2s;
+        }
 
-.tab-button{
-    padding:10px 20px;
-    cursor:pointer;
-    background:transparent;
-    color: var(--text-muted);
-    margin-right:5px;
-    font-size:14px;
-    font-weight: 600;
-    border:none;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s ease;
-}
+        .file-label i {
+            margin-right: 8px;
+            color: #2c6e9e;
+        }
 
-.tab-button:hover{
-    color: var(--primary);
-    background: #f1f5f9;
-}
+        .file-label:hover {
+            background: #eef3fc;
+            border-color: #2c6e9e;
+        }
 
-.tab-button.active{
-    color: var(--primary);
-    border-bottom: 3px solid var(--primary);
-    background: transparent;
-}
+        input[type="file"] {
+            display: none;
+        }
 
-.tab-content{
-    display:none;
-    padding:20px;
-    background:var(--card-bg);
-}
+        .file-name {
+            margin-left: 12px;
+            font-size: 0.8rem;
+            background: #eef2f6;
+            padding: 0.35rem 1rem;
+            border-radius: 30px;
+            display: inline-block;
+        }
 
-.tab-content.active{
-    display:block;
-}
+        .btn {
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
 
-/* Table Modern */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
+        .btn-primary {
+            background: #1f6392;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0f4a6e;
+            transform: translateY(-1px);
+        }
+        .btn-success {
+            background: #2a7f49;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #1e5f36;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #b9cfe4;
+            color: #1f6392;
+        }
+        .btn-outline:hover {
+            background: #eaf3fc;
+        }
+        .btn-warning {
+            background: #c2410c;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #9a3412;
+        }
 
-table{
-    border-collapse:collapse;
-    width:100%;
-    white-space:nowrap;
-    border: none;
-}
+        .info-banner {
+            background: #eef4fa;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
 
-th{
-    background:linear-gradient(to bottom, #f8fafc, #f1f5f9);
-    color:var(--text-main);
-    font-size:11px;
-    font-weight:700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--border-color);
-    padding:12px 10px;
-    text-align: left;
-}
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 1.2rem;
+            border: 1px solid #e2edf5;
+            background: white;
+            margin-top: 1rem;
+        }
 
-td{
-    font-size:12px;
-    padding:10px;
-    border-bottom: 1px solid var(--border-color);
-    color: #334155;
-}
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 1150px;
+        }
 
-tr:hover {
-    background: #f8fafc;
-}
+        .data-table th {
+            background: #1e3a4d;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            border-right: 1px solid #2f627c;
+            font-weight: 600;
+        }
 
-/* Total Row Styling */
-td.total-label {
-    background: #f1f5f9;
-    font-weight: 700;
-    text-align: right;
-    border-bottom: none;
-    border-top: 2px solid var(--border-color);
-    color: var(--text-main);
-}
+        .data-table td {
+            border-bottom: 1px solid #e2edf2;
+            padding: 10px 8px;
+            background-color: #fff;
+            vertical-align: middle;
+        }
 
-td.total-value {
-    background: #ecfdf5;
-    font-weight: 800;
-    color: var(--success);
-    border-bottom: none;
-    border-top: 2px solid var(--border-color);
-    font-size: 14px;
-}
+        /* SEMUA kolom selain kolom Part Demand tetap rata tengah */
+        .data-table td:not(:first-child) {
+            text-align: center;
+        }
+        
+        /* KHUSUS kolom pertama (Part Demand) rata kiri */
+        .data-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            padding-left: 12px;
+        }
+        
+        /* Header kolom pertama juga rata kiri agar konsisten */
+        .data-table th:first-child {
+            text-align: left;
+            padding-left: 12px;
+        }
 
-/* Input & Buttons */
-input[type="text"], input[type="file"] {
-    padding: 10px 14px;
-    font-size: 13px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    transition: all 0.2s;
-    background: #fff;
-}
+        .data-table tr:hover td {
+            background-color: #fef7e0;
+        }
 
-input[type="text"]:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
+        .empty-row td {
+            text-align: center !important;
+            color: #8ba0ae;
+            padding: 2rem;
+        }
 
-.btn-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-}
+        .sjob-highlight {
+            background-color: #ffedd5;
+            font-weight: 600;
+            color: #9a3412;
+            border-radius: 24px;
+            padding: 4px 12px;
+            display: inline-block;
+            font-size: 0.8rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
 
-button {
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 8px;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
+        .action-icons i {
+            margin: 0 5px;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: 0.1s;
+        }
+        .action-icons i:hover {
+            color: #d9534f;
+        }
 
-.btn-primary {
-    background: var(--primary);
-    color: white;
-}
+        .summary-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
 
-.btn-primary:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
+        .badge-count {
+            background: #eef2fa;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+        }
 
-.btn-success {
-    background: var(--success);
-    color: white;
-}
-
-.btn-success:hover {
-    background: #059669;
-    transform: translateY(-1px);
-}
-
-.btn-danger {
-    background: var(--danger);
-    color: white;
-    padding: 6px 12px;
-    font-size: 11px;
-}
-
-.btn-danger:hover {
-    background: #dc2626;
-}
-
-.btn-warning {
-    background: var(--warning);
-    color: white;
-}
-
-.btn-warning:hover {
-    background: #d97706;
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
-}
-
-.btn-secondary:hover {
-    background: #cbd5e1;
-}
-
-/* Editable Cells */
-td[contenteditable]{
-    background:#fff;
-    border: 1px dashed #cbd5e1;
-    border-radius: 4px;
-    transition: background 0.2s;
-}
-
-td[contenteditable]:focus {
-    background: #f0f9ff;
-    border-color: var(--primary);
-    outline: none;
-}
-
-tr.new-row td[contenteditable]{
-    background:#ecfdf5;
-    border-color: var(--success);
-}
-
-/* File Input Styling */
-.file-upload-wrapper {
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
-    width: 100%;
-    margin-bottom: 15px;
-}
-
-.file-upload-wrapper input[type=file] {
-    width: 100%;
-    cursor: pointer;
-    padding: 10px;
-    background: #f8fafc;
-    border: 2px dashed #cbd5e1;
-    border-radius: 8px;
-}
-
-.file-upload-wrapper input[type=file]:hover {
-    border-color: var(--primary);
-    background: #f0f9ff;
-}
-
-.action-col {
-    width: 50px;
-    text-align: center;
-}
-
-</style>
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 1rem;
+            background: #f4f9fe;
+            border-top: 1px solid #e2edf5;
+            color: #4a6f8a;
+        }
+        
+        .code-sample {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 12px;
+        }
+        
+        .warning-note {
+            background: #fff3e0;
+            border-left: 3px solid #f5b042;
+        }
+    </style>
 </head>
-
 <body>
-
 <div class="container">
-
-    <div class="header-content">
-        <i class="fas fa-warehouse"></i>
-        <div>
-            <h3>Manajemen Data Sparepart Bekas</h3>
-            <p>Upload, kelola, dan unduh data sparepart bekas Anda secara efisien.</p>
-        </div>
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-cut"></i> 
+            Part Demand & Service Job
+        </h1>
+        <p><i class="fas fa-filter"></i> <strong>Auto-Extract SJOB:</strong> Kolom "Nomor Service Job / Catatan" — secara otomatis <strong>hanya mengambil teks dari "SJOB" hingga akhir</strong>, sisanya dihapus. <i class="fas fa-align-left"></i> Kolom Part Demand rata kiri.</p>
     </div>
 
-    <div class="card">
-        <div class="tabs">
-            <div class="tab-button active" data-tab="tab1"><i class="fas fa-upload"></i> Import Data</div>
-            <div class="tab-button" data-tab="tab2"><i class="fas fa-file-export"></i> Proses & Export</div>
-        </div>
-
-        <!-- TAB 1 -->
-        <div id="tab1" class="tab-content active">
-            
-            <!-- Grup Tombol Atas -->
-            <div class="btn-group" style="margin-bottom: 10px;">
-                <button class="btn-warning" id="resetBtn"><i class="fas fa-sync-alt"></i> Reset Data</button>
+    <div class="content">
+        <!-- Panel Upload -->
+        <div class="card-panel">
+            <div style="font-weight: 600; margin-bottom: 8px;"><i class="fas fa-upload"></i> Unggah Data (Excel / CSV / JSON)</div>
+            <div class="flex-row">
+                <div class="file-group">
+                    <label class="file-label" for="fileInput">
+                        <i class="fas fa-folder-open"></i> Pilih File
+                    </label>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .json">
+                    <span id="fileNameDisplay" class="file-name">Belum ada file</span>
+                </div>
+                <button id="uploadBtn" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> Muat & Ekstrak SJOB</button>
+                <button id="sampleBtn" class="btn btn-outline"><i class="fas fa-chart-simple"></i> Contoh Data</button>
+                <button id="clearAllBtn" class="btn btn-warning"><i class="fas fa-trash-can"></i> Hapus Semua</button>
             </div>
-
-            <div class="file-upload-wrapper">
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv">
-            </div>
-
-            <input type="text" id="search1" placeholder="&#128269; Cari nomor part, serial, teknisi...">
-
-            <div class="table-container">
-                <table id="table1">
-                    <thead>
-                        <tr>
-                            <th>Nomor</th>
-                            <th>Catatan</th>
-                            <th>Part</th>
-                            <th>Qty Transaksi</th>
-                            <th>Part Demand</th>
-                            <th>Serial Number</th>
-                            <th>Return To Factory</th>
-                            <th>Claim To Factory</th>
-                            <th>Teknisi Perbaikan</th>
-                            <th style="text-align:center">Pilih</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="total-label">TOTAL QTY</td>
-                            <td id="totalQty1" class="total-value">0</td>
-                            <td colspan="6"></td>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div class="info-banner warning-note">
+                <i class="fas fa-scissors"></i> 
+                <span><strong>Aturan Ekstraksi:</strong> Setiap nilai di kolom <strong>"Nomor Service Job / Catatan"</strong> akan diproses: <strong>hanya teks mulai dari "SJOB" (case-sensitive) sampai akhir yang disimpan</strong>. Teks sebelum "SJOB" akan dihapus. Jika tidak mengandung "SJOB", kolom akan dikosongkan.</span>
             </div>
         </div>
 
-        <!-- TAB 2 -->
-        <div id="tab2" class="tab-content">
-            
-            <div class="btn-group">
-                <button class="btn-success" id="addRowBtn"><i class="fas fa-plus-circle"></i> Tambah Baris</button>
-                <button class="btn-primary" id="excel"><i class="fas fa-file-excel"></i> Excel</button>
-                <button class="btn-secondary" id="pdf"><i class="fas fa-file-pdf"></i> PDF</button>
+        <!-- Panel Download Excel (hanya Excel, tanpa CSV) -->
+        <div class="card-panel" style="background:#fefaf5;">
+            <div style="font-weight: 600; margin-bottom: 8px;"><i class="fas fa-download"></i> Ekspor Data ke Excel</div>
+            <div class="flex-row">
+                <button id="downloadExcelBtn" class="btn btn-success"><i class="fas fa-file-excel"></i> Download Excel (.xlsx)</button>
+                <span style="font-size:0.75rem; color:#5a6e7c; margin-left: 8px;"><i class="fas fa-info-circle"></i> Data yang diekspor adalah hasil ekstraksi (hanya SJOB ke kanan)</span>
             </div>
+        </div>
 
-            <input type="text" id="search2" placeholder="&#128269; Cari data yang dipilih...">
-
-            <div class="table-container">
-                <table id="table2">
-                    <thead>
-                        <tr>
-                            <th>Nomor</th>
-                            <th>Catatan</th>
-                            <th>Part</th>
-                            <th>Qty Transaksi</th>
-                            <th>Part Demand</th>
-                            <th>Serial Number</th>
-                            <th>Teknisi Perbaikan</th>
-                            <th class="action-col">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="total-label">TOTAL QTY</td>
-                            <td id="totalQty2" class="total-value">0</td>
-                            <td colspan="4"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+        <!-- Tabel Data -->
+        <div class="summary-bar">
+            <h3><i class="fas fa-table-list"></i> Data Part & Service Job (Hasil Ekstraksi SJOB)</h3>
+            <span class="badge-count" id="rowCounter">Total: 0 baris</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Part Demand</th>
+                        <th>Lot</th>
+                        <th>Attribute</th>
+                        <th>QTY / Qty Transaksi</th>
+                        <th>QTY Konversi</th>
+                        <th>UM Konversi</th>
+                        <th>Remarks 1</th>
+                        <th>Remarks 2</th>
+                        <th>Nomor Service Job / Catatan</th>
+                        <th style="width:70px">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr class="empty-row"><td colspan="10">Belum ada data. Upload file atau klik 'Contoh Data'.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 12px; font-size:0.7rem; text-align:right; color:#6c8fae;">
+            <i class="fas fa-arrow-right"></i> Nilai asli sebelum ekstraksi TIDAK disimpan. Hanya teks "SJOB..." yang dipertahankan. Kolom Part Demand rata kiri.
         </div>
     </div>
+    <footer>
+        <i class="fas fa-robot"></i> Auto-extract: Mencari kata "SJOB" (case-sensitive) → mengambil dari posisi tersebut hingga akhir string.
+    </footer>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
 <script>
-    const { jsPDF } = window.jspdf;
+    // ------------- DATA STORAGE -------------
+    // Nama kolom target: "Nomor Service Job / Catatan"
+    const TARGET_COLUMN = "Nomor Service Job / Catatan";
+    
+    // Kolom yang diperlukan - perhatikan bahwa "QTY" tetap sebagai key internal, namun tampilan header diubah menjadi "QTY / Qty Transaksi"
+    const requiredColumns = [
+        "Part Demand", "Lot", "Attribute", "QTY", 
+        "QTY Konversi", "UM Konversi", "Remarks 1", "Remarks 2", 
+        TARGET_COLUMN
+    ];
+    
+    // Alternative mapping saat upload (untuk kompatibilitas dengan file lama)
+    const alternativeColumnNames = {
+        "Nomor Service Job": TARGET_COLUMN,
+        "Nomor Service Job / Catatan": TARGET_COLUMN,
+        "Service Job": TARGET_COLUMN,
+        "Catatan": TARGET_COLUMN,
+        "SJOB": TARGET_COLUMN,
+        "QTY / Qty Transaksi": "QTY",
+        "Qty Transaksi": "QTY"
+    };
+    
+    let dataset = [];    // menyimpan object dengan keys requiredColumns (nilai sudah terekstrak hanya SJOB...)
 
-    let data1 = [];
-    let data2 = [];
+    // Helper: normalize header
+    function normalizeHeader(str) {
+        return str.trim();
+    }
+    
+    // Fungsi mapping header alternatif ke kolom standar
+    function mapColumnName(originalHeader) {
+        const normalized = normalizeHeader(originalHeader);
+        for (let [alt, target] of Object.entries(alternativeColumnNames)) {
+            if (normalized.toLowerCase() === alt.toLowerCase()) {
+                return target;
+            }
+        }
+        for (let req of requiredColumns) {
+            if (normalized.toLowerCase() === req.toLowerCase()) {
+                return req;
+            }
+        }
+        return null;
+    }
 
-    const fileInput = document.getElementById("fileInput");
-    const search1 = document.getElementById("search1");
-    const search2 = document.getElementById("search2");
-    const addRowBtn = document.getElementById("addRowBtn");
-    const resetBtn = document.getElementById("resetBtn"); // Tombol Reset
+    /**
+     * FUNGSI EKSTRAKSI UTAMA: hanya mengambil teks dari "SJOB" hingga akhir
+     * Aturan: cari substring "SJOB" (case-sensitive). Jika ditemukan, ambil dari index "SJOB" sampai akhir.
+     * Jika tidak ditemukan, kembalikan string kosong.
+     */
+    function extractSjobToEnd(rawValue) {
+        if (!rawValue || typeof rawValue !== 'string') return "";
+        const trimmed = rawValue.trim();
+        const sjobIndex = trimmed.indexOf("SJOB");
+        if (sjobIndex === -1) {
+            return "";   // tidak mengandung SJOB, hapus semua (kosong)
+        }
+        // ambil dari posisi SJOB sampai akhir string
+        const extracted = trimmed.substring(sjobIndex);
+        return extracted;
+    }
+    
+    // Mapping dari raw object ke internal object, dengan EKSTRAKSI pada kolom target
+    function mapToInternal(row) {
+        let mapped = {};
+        requiredColumns.forEach(col => { mapped[col] = ""; });
+        
+        for (let [key, value] of Object.entries(row)) {
+            if (value === undefined || value === null) continue;
+            const targetCol = mapColumnName(key);
+            if (targetCol && requiredColumns.includes(targetCol)) {
+                let rawVal = (value !== undefined && value !== null) ? String(value).trim() : "";
+                // JIKA kolom ini adalah TARGET_COLUMN, lakukan ekstraksi SJOB
+                if (targetCol === TARGET_COLUMN) {
+                    rawVal = extractSjobToEnd(rawVal);
+                }
+                mapped[targetCol] = rawVal;
+            }
+        }
+        
+        return mapped;
+    }
+    
+    // Cek apakah suatu nilai mengandung SJOB (untuk keperluan highlight)
+    function hasSjobPrefix(value) {
+        if (!value || typeof value !== 'string') return false;
+        return value.trim().startsWith("SJOB");
+    }
 
-    const table1 = document.querySelector("#table1 tbody");
-    const table2 = document.querySelector("#table2 tbody");
+    // Render tabel - Part Demand otomatis rata kiri berkat CSS (td:first-child)
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        if (!dataset.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Tidak ada data. Upload file atau klik \'Contoh Data\'.</td></tr>';
+            document.getElementById('rowCounter').innerText = `Total: 0 baris`;
+            return;
+        }
 
-    const totalQty1 = document.getElementById("totalQty1");
-    const totalQty2 = document.getElementById("totalQty2");
+        let html = '';
+        dataset.forEach((item, idx) => {
+            const serviceJobRaw = item[TARGET_COLUMN] || "";
+            const hasSjob = hasSjobPrefix(serviceJobRaw);
+            const displayServiceJob = escapeHtml(serviceJobRaw);
+            const sjobCellContent = hasSjob 
+                ? `<span class="sjob-highlight"><i class="fas fa-bolt" style="font-size:9px; margin-right:4px;"></i> ${displayServiceJob}</span>`
+                : (displayServiceJob === "" ? "<span style='color:#aaa; font-style:italic;'>(kosong)</span>" : displayServiceJob);
+            
+            // Part Demand (kolom pertama) akan otomatis rata kiri oleh CSS
+            html += `<tr>
+                        <td>${escapeHtml(item["Part Demand"] || '')}</td>
+                        <td>${escapeHtml(item["Lot"] || '')}</td>
+                        <td>${escapeHtml(item["Attribute"] || '')}</td>
+                        <td>${escapeHtml(item["QTY"] || '')}</td>
+                        <td>${escapeHtml(item["QTY Konversi"] || '')}</td>
+                        <td>${escapeHtml(item["UM Konversi"] || '')}</td>
+                        <td>${escapeHtml(item["Remarks 1"] || '')}</td>
+                        <td>${escapeHtml(item["Remarks 2"] || '')}</td>
+                        <td style="${hasSjob ? 'background:#fff0e0; border-radius:12px; text-align:center;' : 'text-align:center;'}">${sjobCellContent}</td>
+                        <td class="action-icons" style="text-align:center;"><i class="fas fa-trash-alt" data-index="${idx}" title="Hapus baris"></i></td>
+                      </tr>`;
+        });
+        tbody.innerHTML = html;
+        document.getElementById('rowCounter').innerText = `Total: ${dataset.length} baris`;
 
-    // --- LOGIKA TAB ---
-    document.querySelectorAll(".tab-button").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
-            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-            btn.classList.add("active");
-            document.getElementById(btn.dataset.tab).classList.add("active");
+        // Event hapus per baris
+        document.querySelectorAll('.fa-trash-alt').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                const index = parseInt(icon.getAttribute('data-index'));
+                if (!isNaN(index)) {
+                    dataset.splice(index, 1);
+                    renderTable();
+                }
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Menambahkan data ke dataset (dengan asumsi sudah terekstrak oleh mapToInternal)
+    function addDataRows(rowsArray) {
+        let added = 0;
+        for (let row of rowsArray) {
+            let internal = mapToInternal(row);
+            // Cek apakah setidaknya ada satu kolom yang tidak kosong? Untuk menghindari baris kosong total.
+            const allEmpty = requiredColumns.every(col => internal[col] === "");
+            if (!allEmpty) {
+                dataset.push(internal);
+                added++;
+            }
+        }
+        renderTable();
+        return added;
+    }
+    
+    // Contoh data yang beragam (sebelum ekstraksi)
+    function loadSampleData() {
+        const rawSamples = [
+            { 
+                "Part Demand": "PD-101 - Assy Pump", "Lot": "LOT-A1", "Attribute": "OEM", "QTY": "10", 
+                "QTY Konversi": "10", "UM Konversi": "PCS", "Remarks 1": "Rush", "Remarks 2": "Gudang 1", 
+                "Nomor Service Job / Catatan": "Catatan penting: SJOB/00123 - Perbaikan mesin unit A"
+            },
+            { 
+                "Part Demand": "PD-202 - Motor Drive", "Lot": "LOT-B2", "Attribute": "Aftermarket", "QTY": "5", 
+                "QTY Konversi": "5", "UM Konversi": "BOX", "Remarks 1": "Regular", "Remarks 2": "Konsinyasi", 
+                "Nomor Service Job / Catatan": "Service Job: SJOB-AB-987-XYZ / urgent spare part"
+            },
+            { 
+                "Part Demand": "PD-303 - Control Board", "Lot": "LOT-C9", "Attribute": "Refurb", "QTY": "8", 
+                "QTY Konversi": "8", "UM Konversi": "PCS", "Remarks 1": "Garansi", "Remarks 2": "Service", 
+                "Nomor Service Job / Catatan": "JOB/12345"   // Tidak ada SJOB => akan menjadi kosong
+            },
+            { 
+                "Part Demand": "PD-404 - Fan Assembly", "Lot": "LOT-D7", "Attribute": "Original", "QTY": "20", 
+                "QTY Konversi": "2", "UM Konversi": "DUS", "Remarks 1": "Import", "Remarks 2": "Job #221", 
+                "Nomor Service Job / Catatan": "SJOB/MAINTENANCE/221 - Overhaul total"
+            },
+            { 
+                "Part Demand": "PD-505 - Sensor Kit", "Lot": "LOT-E3", "Attribute": "Premium", "QTY": "3", 
+                "QTY Konversi": "3", "UM Konversi": "PCS", "Remarks 1": "High priority", "Remarks 2": "Spare part", 
+                "Nomor Service Job / Catatan": "Laporan: SJOB-FULL-TEXT-KEKANAN-SAMPAI-SELESAI || catatan tambahan"
+            },
+            { 
+                "Part Demand": "PD-606 - Housing Cover", "Lot": "LOT-F4", "Attribute": "Service", "QTY": "12", 
+                "QTY Konversi": "12", "UM Konversi": "PCS", "Remarks 1": "Express", "Remarks 2": "Workshop", 
+                "Nomor Service Job / Catatan": "Sebelum SJOB/REPAIR/UNIT-007 (Unit rusak ringan)"
+            },
+            { 
+                "Part Demand": "PD-707 - Connector Cable", "Lot": "LOT-G5", "Attribute": "Testing", "QTY": "2", 
+                "QTY Konversi": "2", "UM Konversi": "PCS", "Remarks 1": "Sample", "Remarks 2": "R&D", 
+                "Nomor Service Job / Catatan": "sjob/12345 lowercase"  // tidak dikenali karena case-sensitive SJOB -> kosong
+            },
+            { 
+                "Part Demand": "PD-808 - Transformer XFMR", "Lot": "LOT-H6", "Attribute": "Industrial", "QTY": "7", 
+                "QTY Konversi": "7", "UM Konversi": "PCS", "Remarks 1": "Long lead", "Remarks 2": "PO-123", 
+                "Nomor Service Job / Catatan": "SJOB/TRANSFORMER-2024/MAINT"
+            }
+        ];
+        
+        // Proses setiap sample melalui mapToInternal agar ter-ekstrak
+        for (let raw of rawSamples) {
+            let processed = mapToInternal(raw);
+            dataset.push(processed);
+        }
+        renderTable();
+    }
+
+    // Hapus semua data
+    function clearAllData() {
+        if (dataset.length && confirm("Hapus SEMUA data yang tersimpan? (Data hasil ekstraksi akan hilang)")) {
+            dataset = [];
+            renderTable();
+        } else if (dataset.length === 0) {
+            alert("Tidak ada data untuk dihapus.");
+        }
+    }
+
+    // ------------------- FUNGSI DOWNLOAD EXCEL (XLSX) -------------------
+    function downloadAsExcel() {
+        if (dataset.length === 0) {
+            alert("Tidak ada data untuk diekspor ke Excel.");
+            return;
+        }
+        // export data yang sudah terekstrak (hanya SJOB ke kanan)
+        const exportData = dataset.map(row => {
+            let newRow = {};
+            requiredColumns.forEach(col => {
+                newRow[col] = row[col] || "";
+            });
+            return newRow;
+        });
+        const worksheet = XLSX.utils.json_to_sheet(exportData, { header: requiredColumns });
+        
+        // Mengganti header di sheet untuk kolom QTY menjadi "QTY / Qty Transaksi"
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:J1');
+        const headerRow = range.s.r;
+        for (let C = range.s.c; C <= range.e.c; C++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: C });
+            const cell = worksheet[cellAddress];
+            if (cell && cell.v === "QTY") {
+                cell.v = "QTY / Qty Transaksi";
+            }
+        }
+        
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "PartDemand_ExtractedSJOB");
+        XLSX.writeFile(workbook, `Part_Data_SJOB_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+    }
+
+    // ------------------- UPLOAD & PARSE FILE -------------------
+    function handleFile(file) {
+        return new Promise((resolve, reject) => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext === 'xlsx' || ext === 'xls') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+                    resolve(rows);
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            } 
+            else if (ext === 'csv') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const lines = text.split(/\r?\n/);
+                    if (lines.length === 0) reject("File CSV kosong");
+                    let headersRaw = lines[0].split(/[;,]/).map(h => h.trim().replace(/['"]/g, ''));
+                    const dataRows = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        if (lines[i].trim() === "") continue;
+                        const values = lines[i].split(/[;,]/).map(v => v.trim().replace(/['"]/g, ''));
+                        let rowObj = {};
+                        headersRaw.forEach((h, idx) => {
+                            rowObj[h] = values[idx] !== undefined ? values[idx] : "";
+                        });
+                        dataRows.push(rowObj);
+                    }
+                    resolve(dataRows);
+                };
+                reader.onerror = reject;
+                reader.readAsText(file, "UTF-8");
+            }
+            else if (ext === 'json') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const jsonArray = JSON.parse(e.target.result);
+                        if (Array.isArray(jsonArray)) resolve(jsonArray);
+                        else reject("JSON harus berupa array objek");
+                    } catch(err) { reject("JSON tidak valid"); }
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            }
+            else {
+                reject("Format file tidak didukung. Gunakan .xlsx, .xls, .csv, .json");
+            }
+        });
+    }
+
+    // Event Upload dengan ekstraksi otomatis
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Pilih file terlebih dahulu.");
+            return;
+        }
+        handleFile(file).then(rows => {
+            if (!rows || rows.length === 0) {
+                alert("File tidak mengandung data baris.");
+                return;
+            }
+            const added = addDataRows(rows);
+            let extractedCount = dataset.filter(item => item[TARGET_COLUMN] !== "").length;
+            alert(`Berhasil memuat ${added} baris data.\nDari jumlah tersebut, ${extractedCount} baris memiliki hasil ekstraksi SJOB (kolom tidak kosong).\n\nAturan: hanya teks mulai dari "SJOB" yang disimpan.`);
+            fileInput.value = '';
+            document.getElementById('fileNameDisplay').innerText = 'Belum ada file';
+        }).catch(err => {
+            alert("Error memproses file: " + (err.message || err));
         });
     });
 
-    // --- LOGIKA RESET DATA ---
-    resetBtn.addEventListener("click", () => {
-        // Konfirmasi sederhana (opsional)
-        if(confirm("Apakah Anda yakin ingin mereset semua data?")) {
-            data1 = [];
-            data2 = [];
-            table1.innerHTML = "";
-            table2.innerHTML = "";
-            totalQty1.innerText = "0";
-            totalQty2.innerText = "0";
-            fileInput.value = ""; // Hapus file input
-            search1.value = ""; // Hapus search
-            search2.value = "";
+    // Contoh data
+    document.getElementById('sampleBtn').addEventListener('click', () => {
+        loadSampleData();
+    });
+
+    // Hapus semua
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+        clearAllData();
+    });
+
+    // Download Excel (XLSX)
+    document.getElementById('downloadExcelBtn').addEventListener('click', () => {
+        downloadAsExcel();
+    });
+
+    // Tampilkan nama file
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('fileNameDisplay').innerText = file.name;
+        } else {
+            document.getElementById('fileNameDisplay').innerText = 'Belum ada file';
         }
     });
 
-    // --- LOGIKA UPLOAD FILE ---
-    fileInput.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = e => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            data1 = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-            render1(data1);
-            data2 = [];
-            render2(data2);
-        };
-        reader.readAsArrayBuffer(file);
-    });
-
-    // --- PENCARIAN ---
-    search1.addEventListener("input", () => {
-        const keyword = search1.value.toLowerCase();
-        render1(data1.filter(row => Object.values(row).some(val => String(val).toLowerCase().includes(keyword))));
-    });
-
-    search2.addEventListener("input", () => {
-        const keyword = search2.value.toLowerCase();
-        render2(data2.filter(row => Object.values(row).some(val => String(val).toLowerCase().includes(keyword))));
-    });
-
-    // --- TAMBAH BARIS ---
-    addRowBtn.addEventListener("click", () => {
-        data2.push({ "Nomor": "", "Catatan": "", "Part": "", "Qty Transaksi": "", "Part Demand": "", "Serial Number": "", "Teknisi Perbaikan": "", isNew: true });
-        render2(data2);
-    });
-
-    // --- RENDER TABEL 1 ---
-    function render1(arr) {
-        table1.innerHTML = "";
-        let total = 0;
-        arr.forEach((r, i) => {
-            const originalIndex = data1.indexOf(r);
-            const qty = parseFloat(r["Qty Transaksi"]) || 0;
-            total += qty;
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td contenteditable>${r["Nomor"] || ""}</td>
-                <td contenteditable>${r["Catatan"] || ""}</td>
-                <td contenteditable>${r["Part"] || ""}</td>
-                <td contenteditable>${r["Qty Transaksi"] || ""}</td>
-                <td contenteditable>${r["Part Demand"] || ""}</td>
-                <td contenteditable>${r["Serial Number"] || ""}</td>
-                <td contenteditable>${r["Return To Factory"] || ""}</td>
-                <td contenteditable>${r["Claim To Factory"] || ""}</td>
-                <td contenteditable>${r["Teknisi Perbaikan"] || ""}</td>
-                <td style="text-align:center"><input type="checkbox" class="status-check" data-i="${originalIndex}"></td>
-            `;
-            table1.appendChild(tr);
-
-            tr.querySelectorAll("td[contenteditable]").forEach((td, colIndex) => {
-                td.addEventListener("blur", () => {
-                    const keys = ["Nomor", "Catatan", "Part", "Qty Transaksi", "Part Demand", "Serial Number", "Return To Factory", "Claim To Factory", "Teknisi Perbaikan"];
-                    if (data1[originalIndex]) {
-                        data1[originalIndex][keys[colIndex]] = td.innerText;
-                        if (colIndex === 3) {
-                            recalculateTotal1();
-                            updateTab2();
-                        }
-                    }
-                });
-            });
-        });
-
-        totalQty1.innerText = total.toLocaleString('id-ID');
-        table1.querySelectorAll("input[type='checkbox']").forEach(c => c.addEventListener("change", updateTab2));
-    }
-
-    function recalculateTotal1() {
-        totalQty1.innerText = data1.reduce((t, r) => t + (parseFloat(r["Qty Transaksi"]) || 0), 0).toLocaleString('id-ID');
-    }
-
-    // --- UPDATE TAB 2 ---
-    function updateTab2() {
-        data2 = [];
-        table1.querySelectorAll("input[type='checkbox']").forEach(cb => {
-            if (cb.checked) {
-                data2.push({ ...data1[parseInt(cb.dataset.i)] });
-            }
-        });
-        render2(data2);
-    }
-
-    // --- RENDER TABEL 2 ---
-    function render2(arr) {
-        table2.innerHTML = "";
-        let total = 0;
-
-        arr.forEach((r, i) => {
-            const qty = parseFloat(r["Qty Transaksi"]) || 0;
-            total += qty;
-
-            const tr = document.createElement("tr");
-            if (r.isNew) tr.classList.add("new-row");
-
-            tr.innerHTML = `
-                <td contenteditable>${r["Nomor"] || ""}</td>
-                <td contenteditable>${r["Catatan"] || ""}</td>
-                <td contenteditable>${r["Part"] || ""}</td>
-                <td contenteditable>${r["Qty Transaksi"] || ""}</td>
-                <td contenteditable>${r["Part Demand"] || ""}</td>
-                <td contenteditable>${r["Serial Number"] || ""}</td>
-                <td contenteditable>${r["Teknisi Perbaikan"] || ""}</td>
-                <td class="action-col"><button class="btn-danger" data-index="${i}"><i class="fas fa-trash-alt"></i></button></td>
-            `;
-            table2.appendChild(tr);
-
-            tr.querySelectorAll("td[contenteditable]").forEach((td, colIndex) => {
-                td.addEventListener("blur", () => {
-                    const keys = ["Nomor", "Catatan", "Part", "Qty Transaksi", "Part Demand", "Serial Number", "Teknisi Perbaikan"];
-                    if (data2[i]) data2[i][keys[colIndex]] = td.innerText;
-                    recalculateTotal2();
-                });
-            });
-        });
-
-        table2.querySelectorAll(".btn-danger").forEach(btn => {
-            btn.addEventListener("click", e => {
-                const idx = parseInt(e.currentTarget.dataset.index);
-                data2.splice(idx, 1);
-                render2(data2);
-            });
-        });
-
-        totalQty2.innerText = total.toLocaleString('id-ID');
-    }
-
-    function recalculateTotal2() {
-        totalQty2.innerText = data2.reduce((t, r) => t + (parseFloat(r["Qty Transaksi"]) || 0), 0).toLocaleString('id-ID');
-    }
-
-    // --- DOWNLOAD EXCEL ---
-    document.getElementById("excel").onclick = () => {
-        if (data2.length === 0) return alert("Tidak ada data untuk diunduh.");
-        
-        const dataToExport = data2.map(r => ({
-            "Nomor": r["Nomor"], "Catatan": r["Catatan"], "Part": r["Part"],
-            "Qty Transaksi": r["Qty Transaksi"], "Part Demand": r["Part Demand"],
-            "Serial Number": r["Serial Number"], "Teknisi Perbaikan": r["Teknisi Perbaikan"]
-        }));
-
-        const grandTotal = data2.reduce((acc, r) => acc + (parseFloat(r["Qty Transaksi"]) || 0), 0);
-        dataToExport.push({ "Nomor": "", "Catatan": "", "Part": "TOTAL", "Qty Transaksi": grandTotal, "Part Demand": "", "Serial Number": "", "Teknisi Perbaikan": "" });
-
-        const ws = XLSX.utils.json_to_sheet(dataToExport);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Data");
-        XLSX.writeFile(wb, "sparepart_data.xlsx");
-    };
-
-    // --- DOWNLOAD PDF ---
-    document.getElementById("pdf").onclick = () => {
-        if (data2.length === 0) return alert("Tidak ada data untuk diunduh.");
-
-        const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
-        const col = ["Nomor", "Catatan", "Part", "Qty", "Demand", "Serial", "Teknisi"];
-        const rows = data2.map(r => [r["Nomor"], r["Catatan"], r["Part"], r["Qty Transaksi"], r["Part Demand"], r["Serial Number"], r["Teknisi Perbaikan"]]);
-        const grandTotal = data2.reduce((acc, r) => acc + (parseFloat(r["Qty Transaksi"]) || 0), 0);
-        rows.push(["", "", "TOTAL", grandTotal, "", "", ""]);
-
-        doc.setFontSize(18);
-        doc.setTextColor(40);
-        doc.text("Laporan Data Sparepart Bekas", 14, 20);
-        
-        doc.autoTable({
-            head: [col],
-            body: rows,
-            startY: 30,
-            margin: { left: 10, right: 10 },
-            styles: {
-                font: "helvetica",
-                fontStyle: "bold",
-                fontSize: 6,
-                lineColor: 0,
-                lineWidth: 0.5,
-                textColor: 0,
-                cellWidth: 'wrap'
-            },
-            headStyles: {
-                fillColor: [255, 255, 255],
-                textColor: 0,
-                fontStyle: "bold",
-                lineColor: 0,
-                lineWidth: 0.5,
-                halign: 'center'
-            },
-            columnStyles: {
-                0: { halign: 'center' },
-                3: { halign: 'center' }
-            },
-            didParseCell: function (data) {
-                if (data.row.index === rows.length) {
-                    data.cell.styles.fillColor = [240, 240, 240];
-                    data.cell.styles.fontStyle = "bold";
-                    if(data.column.index === 3) {
-                        data.cell.styles.halign = 'center';
-                    }
-                }
-            },
-            theme: "grid"
-        });
-
-        doc.save("sparepart_report.pdf");
-    };
+    // Inisialisasi render
+    renderTable();
 </script>
-
 </body>
 </html>
