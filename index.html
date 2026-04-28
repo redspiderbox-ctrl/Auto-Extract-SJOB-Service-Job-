@@ -918,7 +918,7 @@ tfoot td { padding: 12px; border-bottom: none; border-top: 2px solid var(--borde
         var col=["No","Catatan","Part","Qty","Demand","Serial","Teknisi","Lama Hari"], rows=[]; 
         
         // Header HANYA Judul dan Tanggal (Alamat dihapus)
-        doc.setFontSize(18); doc.setTextColor(30,41,59); doc.setFont(undefined,"bold"); doc.text("TAGIHAN RETURN", pw/2, 20, {align: "center"});
+        doc.setFontSize(18); doc.setTextColor(30,41,59); doc.setFont(undefined,"bold"); doc.text("Tagihan Sparepart Bekas Return", pw/2, 20, {align: "center"});
         
         doc.setFontSize(10); doc.setTextColor(100,116,139); doc.setFont(undefined,"normal");
         doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID", {day:"numeric", month:"long", year:"numeric"}), pw - mg.right, 20, {align: "right"});
